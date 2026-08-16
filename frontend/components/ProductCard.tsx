@@ -1,0 +1,2 @@
+import Link from 'next/link'; import type {Product} from '@/lib/api';
+export function ProductCard({product}:{product:Product}){return <article className="card"><Link href={`/products/${product.slug}`}><img src={product.imageUrl} alt={product.name}/></Link><div className="card-body"><span className="eyebrow">{product.categoryName}</span><h3><Link href={`/products/${product.slug}`}>{product.name}</Link></h3><div className="price-row"><strong>${product.price.toFixed(2)}</strong><span>{product.inventory>0?'In stock':'Sold out'}</span></div></div></article>}

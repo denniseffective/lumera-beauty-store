@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS categories (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(80) NOT NULL UNIQUE,
+  slug VARCHAR(80) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  category_id INTEGER NOT NULL REFERENCES categories(id),
+  name VARCHAR(140) NOT NULL,
+  slug VARCHAR(160) NOT NULL UNIQUE,
+  description TEXT NOT NULL,
+  price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
+  image_url TEXT NOT NULL,
+  inventory INTEGER NOT NULL DEFAULT 0 CHECK (inventory >= 0),
+  featured BOOLEAN NOT NULL DEFAULT FALSE,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS products_category_idx ON products(category_id);
+CREATE INDEX IF NOT EXISTS products_name_idx ON products(LOWER(name));

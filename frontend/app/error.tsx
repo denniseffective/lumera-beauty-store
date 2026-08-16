@@ -1,0 +1,1 @@
+'use client'; export default function Error({reset}:{reset:()=>void}){return <main className="section"><div className="notice error">We couldn’t load this page. <button onClick={reset}>Try again</button></div></main>}
