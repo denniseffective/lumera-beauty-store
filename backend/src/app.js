@@ -1,14 +1,22 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { productRouter } from './productRoutes.js';
+import { authRouter } from './authRoutes.js';
+import { cartRouter } from './cartRoutes.js';
+import { orderRouter } from './orderRoutes.js';
 import { notFound, errorHandler } from './middleware.js';
 
 export const app=express();
 app.use(helmet());
-app.use(cors({origin:process.env.FRONTEND_URL || 'http://localhost:3000'}));
+app.use(cors({origin:process.env.FRONTEND_URL || 'http://localhost:3000',credentials:true}));
 app.use(express.json({limit:'100kb'}));
+app.use(cookieParser());
 app.get('/api/health',(req,res)=>res.json({status:'ok'}));
+app.use('/api/auth',authRouter);
+app.use('/api/cart',cartRouter);
+app.use('/api',orderRouter);
 app.use('/api',productRouter);
 app.use(notFound);
 app.use(errorHandler);

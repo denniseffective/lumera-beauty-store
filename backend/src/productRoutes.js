@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { query } from './db.js';
-import { requireAdmin } from './middleware.js';
+import { authenticate, requireAdmin } from './middleware.js';
 import { productSchema } from './validation.js';
 
 export const productRouter = Router();
@@ -32,11 +32,11 @@ productRouter.get('/products/:slug', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-productRouter.get('/admin/products', requireAdmin, async (req, res, next) => {
+productRouter.get('/admin/products', authenticate, requireAdmin, async (req, res, next) => {
   try { res.json({ data: (await query(`SELECT ${fields} FROM products p JOIN categories c ON c.id=p.category_id ORDER BY p.created_at DESC`)).rows }); } catch(e) { next(e); }
 });
 
-productRouter.post('/admin/products', requireAdmin, async (req, res, next) => {
+productRouter.post('/admin/products', authenticate, requireAdmin, async (req, res, next) => {
   try {
     const parsed = productSchema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ error:'Please correct the product fields.', details:parsed.error.flatten().fieldErrors });
@@ -46,7 +46,7 @@ productRouter.post('/admin/products', requireAdmin, async (req, res, next) => {
   } catch(e){ next(e); }
 });
 
-productRouter.put('/admin/products/:id', requireAdmin, async (req,res,next)=>{
+productRouter.put('/admin/products/:id', authenticate, requireAdmin, async (req,res,next)=>{
   try {
     const parsed=productSchema.safeParse(req.body);
     if(!parsed.success) return res.status(400).json({error:'Please correct the product fields.',details:parsed.error.flatten().fieldErrors});
@@ -57,6 +57,6 @@ productRouter.put('/admin/products/:id', requireAdmin, async (req,res,next)=>{
   } catch(e){next(e);}
 });
 
-productRouter.delete('/admin/products/:id', requireAdmin, async(req,res,next)=>{
+productRouter.delete('/admin/products/:id', authenticate, requireAdmin, async(req,res,next)=>{
   try { const result=await query('UPDATE products SET active=FALSE,updated_at=NOW() WHERE id=$1 RETURNING id',[req.params.id]); if(!result.rowCount)return res.status(404).json({error:'Product not found.'}); res.status(204).end(); } catch(e){next(e);}
 });

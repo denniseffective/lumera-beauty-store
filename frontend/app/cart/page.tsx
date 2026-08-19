@@ -1,0 +1,10 @@
+'use client';
+import Link from 'next/link';import {useEffect,useState} from 'react';import {api,type Cart} from '@/lib/api';
+export default function CartPage(){
+ const [cart,setCart]=useState<Cart|null>(null);const [error,setError]=useState('');
+ const load=()=>{void api<{data:Cart}>('/cart').then(r=>setCart(r.data)).catch(e=>setError(e instanceof Error?e.message:'Unable to load cart.'))};useEffect(load,[]);
+ const quantity=async(productId:number,value:number)=>{try{await api(`/cart/items/${productId}`,{method:'PATCH',body:JSON.stringify({quantity:value})});load()}catch(e){setError(e instanceof Error?e.message:'Unable to update cart.')}};
+ const remove=async(productId:number)=>{await api(`/cart/items/${productId}`,{method:'DELETE'});load()};
+ if(error&&!cart)return <main className="section"><div className="notice error">{error} <Link href="/login"><u>Sign in</u></Link></div></main>;
+ return <main className="section"><span className="eyebrow">YOUR ROUTINE</span><h1 className="page-title">Shopping cart</h1>{!cart?<div className="notice">Loading cart…</div>:!cart.items.length?<div className="notice">Your cart is empty. <Link href="/products"><u>Shop skincare</u></Link></div>:<div className="cart-layout"><section>{cart.items.map(item=><article className="cart-item" key={item.id}><img src={item.imageUrl} alt={item.name}/><div><Link href={`/products/${item.slug}`}><h2>{item.name}</h2></Link><p>${item.price.toFixed(2)}</p><label>Quantity <select value={item.quantity} onChange={e=>quantity(item.productId,Number(e.target.value))}>{Array.from({length:Math.min(20,item.inventory)},(_,i)=>i+1).map(n=><option key={n}>{n}</option>)}</select></label><button className="text-button" onClick={()=>remove(item.productId)}>Remove</button></div><strong>${item.lineTotal.toFixed(2)}</strong></article>)}</section><aside className="summary"><h2>Order summary</h2><p><span>Subtotal</span><strong>${cart.subtotal.toFixed(2)}</strong></p><small>Shipping and taxes are simulated for this course project.</small><Link className="button" href="/checkout">Continue to checkout</Link></aside></div>}</main>
+}
